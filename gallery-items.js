@@ -68,7 +68,6 @@ const refs = {
   gallery: document.querySelector('.js-gallery'),
   lightbox: document.querySelector('.js-lightbox'),
   lightboxOverlay: document.querySelector('.lightbox__overlay'),
-  lightboxContent: document.querySelector('.lightbox__content'),
   lightboxImage: document.querySelector('.lightbox__image'),
   closeButton: document.querySelector('.lightbox__button'),
 };
@@ -81,7 +80,7 @@ refs.lightboxOverlay.addEventListener('click', onBackdropClick);
 
 function createImages(images) {
   return images
-    .map(({ preview, original, description }) => {
+    .map(({ preview, original, description }, index) => {
       return `<li class="gallery__item">
   <a
     class="gallery__link"
@@ -92,6 +91,7 @@ function createImages(images) {
       src="${preview}"
       data-source="${original}"
       data-alt="${description}"
+      data-index = ${index}
     />
   </a>
 </li>`;
@@ -100,29 +100,62 @@ function createImages(images) {
 }
 
 function onOpenModal(event) {
-  window.addEventListener('keydown', onEscKeyPress);
+  window.addEventListener('keydown', onKeystrokess);
+
   event.preventDefault();
   const currentImg = event.target;
+
   if (event.target.nodeName !== 'IMG') {
     return;
   }
   refs.lightbox.classList.add('is-open');
   refs.lightboxImage.src = currentImg.dataset.source;
   refs.lightboxImage.alt = currentImg.dataset.alt;
+  refs.lightboxImage.setAttribute('data-index', currentImg.dataset.index);
 }
 
 function onCloseModal() {
-  window.removeEventListener('keydown', onEscKeyPress);
+  window.removeEventListener('keydown', onKeystrokess);
   refs.lightbox.classList.remove('is-open');
+  refs.lightboxImage.removeAttribute('data-index');
+  refs.lightboxImage.removeAttribute('src');
+  refs.lightboxImage.removeAttribute('alt');
 }
 
-function onEscKeyPress(event) {
+function onKeystrokess(event) {
   if (event.code === 'Escape') {
     onCloseModal();
+  }
+  if (event.code === 'Escape') {
+    onCloseModal();
+  }
+  const arrowRight = event.code === 'ArrowRight';
+  const arrowLeft = event.code === 'ArrowLeft';
+
+  if (arrowRight || arrowLeft) {
+    onNextImg(arrowRight);
   }
 }
 function onBackdropClick(event) {
   if (event.currentTarget === event.target) {
     onCloseModal();
   }
+}
+function onNextImg(arrowR) {
+  let index;
+
+  index = arrowR
+    ? Number(refs.lightboxImage.dataset.index) + 1
+    : Number(refs.lightboxImage.dataset.index) - 1;
+
+  if (index < 0) {
+    index = images.length + index;
+  }
+
+  if (index === images.length) {
+    index = 0;
+  }
+
+  refs.lightboxImage.src = images[index].original;
+  refs.lightboxImage.dataset.index = index;
 }
