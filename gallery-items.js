@@ -76,7 +76,7 @@ const imgMarkup = createImages(images);
 refs.gallery.insertAdjacentHTML('beforeend', imgMarkup);
 refs.gallery.addEventListener('click', onOpenModal);
 refs.closeButton.addEventListener('click', onCloseModal);
-refs.lightboxOverlay.addEventListener('click', onBackdropClick);
+refs.lightboxOverlay.addEventListener('click', onCloseModal);
 
 function createImages(images) {
   return images
@@ -100,51 +100,46 @@ function createImages(images) {
 }
 
 function onOpenModal(event) {
-  window.addEventListener('keydown', onKeystrokess);
-
   event.preventDefault();
   const currentImg = event.target;
 
   if (event.target.nodeName !== 'IMG') {
     return;
   }
+  window.addEventListener('keydown', onKeystrokess);
   refs.lightbox.classList.add('is-open');
   refs.lightboxImage.src = currentImg.dataset.source;
   refs.lightboxImage.alt = currentImg.dataset.alt;
   refs.lightboxImage.setAttribute('data-index', currentImg.dataset.index);
 }
 
-function onCloseModal() {
-  window.removeEventListener('keydown', onKeystrokess);
-  refs.lightbox.classList.remove('is-open');
-  refs.lightboxImage.removeAttribute('data-index');
-  refs.lightboxImage.removeAttribute('src');
-  refs.lightboxImage.removeAttribute('alt');
+function onCloseModal(event) {
+  if (event.currentTarget === event.target) {
+    refs.lightbox.classList.remove('is-open');
+    refs.lightboxImage.removeAttribute('data-index');
+    refs.lightboxImage.removeAttribute('src');
+    refs.lightboxImage.removeAttribute('alt');
+    window.removeEventListener('keydown', onKeystrokess);
+  }
 }
 
 function onKeystrokess(event) {
-  if (event.code === 'Escape') {
-    onCloseModal();
-  }
-  if (event.code === 'Escape') {
-    onCloseModal();
-  }
+  const esc = event.code === 'Escape';
   const arrowRight = event.code === 'ArrowRight';
   const arrowLeft = event.code === 'ArrowLeft';
+  if (esc) {
+    onCloseModal(esc);
+  }
 
   if (arrowRight || arrowLeft) {
     onNextImg(arrowRight);
   }
 }
-function onBackdropClick(event) {
-  if (event.currentTarget === event.target) {
-    onCloseModal();
-  }
-}
-function onNextImg(arrowR) {
+
+function onNextImg(right) {
   let index;
 
-  index = arrowR
+  index = right
     ? Number(refs.lightboxImage.dataset.index) + 1
     : Number(refs.lightboxImage.dataset.index) - 1;
 
